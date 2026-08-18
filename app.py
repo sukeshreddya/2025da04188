@@ -22,12 +22,12 @@ import matplotlib.pyplot as plt
 import joblib
 import os
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state="expanded", theme="dark")
 
 MODEL_DIR = "model"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-st.title("ML Models Comparison — Assignment 2 Starter")
+st.title("ML Models Comparison — Assignment 2 (2025DA04188)")
 
 st.markdown(
     """
