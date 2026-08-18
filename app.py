@@ -33,29 +33,36 @@ st.markdown(
     """
     <style>
     .section-card {
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 10px;
-        padding: 0.9rem 1rem 0.8rem 1rem;
-        background: rgba(255,255,255,0.015);
-        margin-bottom: 0.9rem;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 12px;
+        padding: 1rem 1.15rem 1rem 1.15rem;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        margin-bottom: 1.1rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
     .section-card h3, .section-card h4 {
         margin-top: 0;
-        margin-bottom: 0.65rem;
-        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
     }
     .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
+        gap: 0.55rem;
+        margin-bottom: 0.7rem;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        padding: 0.35rem 0.75rem;
-        background: rgba(255,255,255,0.03);
+        border-radius: 9px;
+        padding: 0.45rem 0.9rem;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
     }
     .stButton > button {
+        border-radius: 9px;
+        padding: 0.55rem 1rem;
+        font-weight: 600;
+    }
+    .stDataFrame {
         border-radius: 8px;
-        padding: 0.5rem 1rem;
     }
     </style>
     """,
@@ -170,16 +177,6 @@ with left_col:
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         st.subheader("Data Preview")
         st.dataframe(df.head(), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        st.subheader("Column Information")
-        col_df = pd.DataFrame({
-            "Column": df.columns,
-            "Type": df.dtypes.astype(str).values,
-            "Missing": df.isna().sum().values,
-        })
-        st.dataframe(col_df, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
