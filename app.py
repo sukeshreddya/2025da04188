@@ -27,7 +27,7 @@ st.set_page_config(layout="wide")
 MODEL_DIR = "model"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-st.title("ML Models Comparison — Assignment 2 Starter")
+st.title("ML Models Comparison — Assignment 2 (2025DA04188)")
 
 st.markdown(
     """
