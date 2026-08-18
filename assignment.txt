@@ -1,0 +1,133 @@
+BITS Pilani
+Work Integrated Learning Programmes Division
+M.Tech (AIML/DSE)
+Machine Learning
+Assignment - 2
+
+Marks: 15
+Submission Deadline: 18-Aug-2026
+
+------------------------------------------------------------
+1. Overview
+------------------------------------------------------------
+You are required to:
+- Implement multiple classification models
+- Build an interactive Streamlit web application
+- Deploy the app on Streamlit Community Cloud (FREE)
+- Share clickable links for evaluation
+
+Workflow: modeling, evaluation, UI design, deployment.
+Assignment must be performed on BITS Virtual Lab.
+
+------------------------------------------------------------
+2. Mandatory Submission Links
+------------------------------------------------------------
+Submit a single PDF containing:
+1. GitHub Repository Link with:
+   - Complete source code
+   - requirements.txt
+   - README.md
+   - Test data (csv)
+
+2. Live Streamlit App Link:
+   - Deployed on Streamlit Community Cloud
+   - Must open interactive frontend
+
+3. Screenshot:
+   - Execution proof on BITS Virtual Lab
+
+4. README.md content (see Section 3 - Step 5)
+
+------------------------------------------------------------
+3. Assignment Details
+------------------------------------------------------------
+Step 1: Dataset Choice
+- Choose ONE classification dataset (Kaggle/UCI)
+- Binary or multi-class
+- Minimum features: 12
+- Minimum instances: 500
+
+Step 2: ML Models & Evaluation
+Implement on same dataset:
+1. Logistic Regression
+2. Decision Tree Classifier
+3. K-Nearest Neighbor
+4. Naive Bayes (Gaussian/Multinomial)
+5. Random Forest (Ensemble)
+
+Metrics to calculate:
+- Accuracy
+- AUC Score
+- Precision
+- Recall
+- F1 Score
+- Matthews Correlation Coefficient (MCC)
+
+Step 3: GitHub Repository Structure
+project-folder/
+-- app.py (or streamlit_app.py)
+-- requirements.txt
+-- README.md
+-- test_data.csv
+-- model/ (saved models)
+
+Step 4: requirements.txt Example
+streamlit
+scikit-learn
+numpy
+pandas
+matplotlib
+seaborn
+
+Step 5: README.md Structure
+a. Problem statement
+b. Dataset description [1 mark]
+c. GitHub Repository Link [1 mark]
+d. Models used [5 marks]
+   - Comparison table with metrics
+e. Observations [3 marks]
+   - Performance notes for each model
+   - Overall winner
+
+Step 6: Streamlit Deployment
+1. Go to https://streamlit.io/cloud
+2. Sign in with GitHub
+3. Click "New App"
+4. Select repository
+5. Choose branch (main)
+6. Select app.py
+7. Deploy
+
+App must include:
+- Dataset upload option (CSV) [1 mark]
+- Model selection dropdown [1 mark]
+- Display evaluation metrics [1 mark]
+- Confusion matrix/classification report [1 mark]
+
+------------------------------------------------------------
+4. Anti-Plagiarism Guidelines
+------------------------------------------------------------
+- Code-level checks: commit history, repo structure
+- UI-level checks: avoid copy-paste templates
+- Model-level checks: dataset/model/output duplication
+- AI tools allowed only for learning support, not copy-paste
+
+------------------------------------------------------------
+5. Final Submission Checklist
+------------------------------------------------------------
+☐ GitHub repo link works
+☐ Streamlit app link opens
+☐ App loads without errors
+☐ All required features implemented
+☐ README.md updated and added in PDF
+
+------------------------------------------------------------
+6. Marks Distribution
+------------------------------------------------------------
+- Model implementation & GitHub upload: 10 marks
+- Streamlit App Development: 4 marks
+- BITS Lab screenshot: 1 mark
+Total: 15 marks
+
+Deadline: 18 August 23:59 PM
+No extensions. No draft submissions.
