@@ -82,8 +82,8 @@ with right_col:
         df = pd.read_csv(uploaded_file)
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         st.subheader("Training Configuration")
-        target = st.selectbox("Select target column", options=df.columns)
-        test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.2)
+        target = st.selectbox("Select target column", options=sorted(df.columns))
+        test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.35)
         random_state = st.number_input("Random state", value=42)
 
         if st.button("Train & Evaluate", use_container_width=True):
@@ -165,7 +165,17 @@ with left_col:
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.subheader("Dataset Overview")
     if df is None:
-        st.info("Upload a CSV file to view dataset information, preview, and column details.")
+        st.info(
+            """
+            **Instructions:**
+            1. Upload a CSV file with at least 20 rows for meaningful results
+            2. Select the target column
+            3. Adjust test size and random state
+            4. Click "Train & Evaluate" to run all 5 models
+
+            **Recommended:** Use the preprocessed credit card dataset for best results.
+            """
+        )
     else:
         info_col1, info_col2 = st.columns(2)
         info_col1.metric("Rows", f"{len(df):,}")
