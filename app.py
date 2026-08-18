@@ -38,68 +38,91 @@ if uploaded_file is not None:
     random_state = st.number_input("Random state", value=42)
 
     if st.button("Train & Evaluate"):
-        X = df.drop(columns=[target])
-        y = df[target]
+        try:
+            X = df.drop(columns=[target])
+            y = df[target]
 
-        # Basic preprocessing
-        X = pd.get_dummies(X, drop_first=True)
-        if y.dtype == object or y.dtype.name == "category":
-            le = LabelEncoder()
-            y = le.fit_transform(y)
+            # Handle missing values
+            X = X.fillna(X.mean(numeric_only=True))
+            y = y.dropna()
+            X = X.loc[y.index]
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, stratify=y if len(np.unique(y))>1 else None
-        )
+            # Basic preprocessing
+            X = pd.get_dummies(X, drop_first=True)
+            if X.empty or len(X) == 0:
+                st.error("Error: No valid features after preprocessing.")
+                st.stop()
 
-        models = {
-            "Logistic Regression": LogisticRegression(max_iter=1000),
-            "Decision Tree": DecisionTreeClassifier(),
-            "K-Nearest Neighbors": KNeighborsClassifier(),
-            "Naive Bayes (Gaussian)": GaussianNB(),
-            "Random Forest": RandomForestClassifier(n_estimators=100, random_state=random_state),
-        }
+            # Encode target if needed
+            if y.dtype == object or y.dtype.name == "category":
+                le = LabelEncoder()
+                y = le.fit_transform(y)
+            else:
+                y = y.astype(int)
 
-        results = []
-        for name, model in models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            try:
-                if len(np.unique(y)) == 2:
-                    y_proba = model.predict_proba(X_test)[:, 1]
-                    auc = roc_auc_score(y_test, y_proba)
-                else:
-                    auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
-            except Exception:
-                auc = np.nan
+            if len(np.unique(y)) < 2:
+                st.error("Error: Target variable must have at least 2 classes.")
+                st.stop()
 
-            res = {
-                "model": name,
-                "accuracy": accuracy_score(y_test, y_pred),
-                "precision": precision_score(y_test, y_pred, average="macro", zero_division=0),
-                "recall": recall_score(y_test, y_pred, average="macro", zero_division=0),
-                "f1": f1_score(y_test, y_pred, average="macro", zero_division=0),
-                "auc": auc,
-                "mcc": matthews_corrcoef(y_test, y_pred),
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size, random_state=random_state, stratify=y
+            )
+
+            models = {
+                "LogisticRegression": LogisticRegression(max_iter=1000),
+                "DecisionTree": DecisionTreeClassifier(),
+                "KNN": KNeighborsClassifier(),
+                "GaussianNB": GaussianNB(),
+                "RandomForest": RandomForestClassifier(n_estimators=100, random_state=random_state),
             }
-            results.append(res)
 
-            # save model
-            joblib.dump(model, os.path.join(MODEL_DIR, f"{name.replace(' ', '_')}.pkl"))
+            results = []
+            for name, model in models.items():
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                try:
+                    if len(np.unique(y)) == 2:
+                        y_proba = model.predict_proba(X_test)[:, 1]
+                        auc = roc_auc_score(y_test, y_proba)
+                    else:
+                        auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
+                except Exception:
+                    auc = np.nan
 
-        results_df = pd.DataFrame(results).set_index("model")
-        st.write("Evaluation metrics")
-        st.dataframe(results_df)
+                res = {
+                    "model": name,
+                    "accuracy": accuracy_score(y_test, y_pred),
+                    "precision": precision_score(y_test, y_pred, average="macro", zero_division=0),
+                    "recall": recall_score(y_test, y_pred, average="macro", zero_division=0),
+                    "f1": f1_score(y_test, y_pred, average="macro", zero_division=0),
+                    "auc": auc,
+                    "mcc": matthews_corrcoef(y_test, y_pred),
+                }
+                results.append(res)
 
-        # show confusion matrix for selected model
-        sel = st.selectbox("Show confusion matrix for", options=list(models.keys()))
-        cm_model = joblib.load(os.path.join(MODEL_DIR, f"{sel.replace(' ', '_')}.pkl"))
-        y_pred_sel = cm_model.predict(X_test)
-        cm = confusion_matrix(y_test, y_pred_sel)
-        fig, ax = plt.subplots()
-        sns.heatmap(cm, annot=True, fmt="d", ax=ax)
-        ax.set_xlabel("Predicted")
-        ax.set_ylabel("Actual")
-        st.pyplot(fig)
+                # save model with sanitized name
+                joblib.dump(model, os.path.join(MODEL_DIR, f"{name}.pkl"))
+
+            results_df = pd.DataFrame(results).set_index("model")
+            st.write("Evaluation metrics")
+            st.dataframe(results_df)
+
+            # show confusion matrix for selected model
+            sel = st.selectbox("Show confusion matrix for", options=list(models.keys()))
+            cm_model = joblib.load(os.path.join(MODEL_DIR, f"{sel}.pkl"))
+            y_pred_sel = cm_model.predict(X_test)
+            cm = confusion_matrix(y_test, y_pred_sel)
+            fig, ax = plt.subplots()
+            sns.heatmap(cm, annot=True, fmt="d", ax=ax)
+            ax.set_xlabel("Predicted")
+            ax.set_ylabel("Actual")
+            st.pyplot(fig)
+
+            st.success("Training and evaluation complete — models saved in model/ directory.")
+        except Exception as e:
+            st.error(f"Error during training: {str(e)}")
+            import traceback
+            st.write(traceback.format_exc())
 
         st.success("Training and evaluation complete — models saved in model/ directory.")
 else:
