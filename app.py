@@ -165,7 +165,17 @@ with left_col:
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.subheader("Dataset Overview")
     if df is None:
-        st.info("Upload a CSV file to view dataset information, preview, and column details.")
+        st.info(
+            """
+            **Instructions:**
+            1. Upload a CSV file with at least 20 rows for meaningful results
+            2. Select the target column
+            3. Adjust test size and random state
+            4. Click "Train & Evaluate" to run all 5 models
+
+            **Recommended:** Use the preprocessed credit card dataset for best results.
+            """
+        )
     else:
         info_col1, info_col2 = st.columns(2)
         info_col1.metric("Rows", f"{len(df):,}")
