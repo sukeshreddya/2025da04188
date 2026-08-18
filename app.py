@@ -22,162 +22,200 @@ import matplotlib.pyplot as plt
 import joblib
 import os
 
+st.set_page_config(layout="wide")
+
 MODEL_DIR = "model"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 st.title("ML Models Comparison — Assignment 2 Starter")
 
-st.markdown("""
-**Instructions:**
-1. Upload a CSV file with at least 20 rows for meaningful results
-2. Select the target column
-3. Adjust test size and random state
-4. Click "Train & Evaluate" to run all 5 models
+st.markdown(
+    """
+    <style>
+    .section-card {
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 12px;
+        padding: 1rem 1rem 0.75rem 1rem;
+        background: rgba(255,255,255,0.02);
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .section-card h3, .section-card h4 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-**Recommended:** Use the preprocessed credit card dataset for best results.
-""")
+uploaded_file = None
+left_col, right_col = st.columns([1.3, 0.9])
 
-uploaded_file = st.file_uploader("Upload CSV dataset", type=["csv"]) 
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    
-    # Warning for small datasets
-    if len(df) < 20:
-        st.warning(f"⚠️ Dataset has only {len(df)} rows. Recommend at least 20 rows for meaningful results.")
-    
-    st.write("Data preview")
-    st.dataframe(df.head())
+with left_col:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("Dataset Overview")
+    if uploaded_file is None:
+        st.info("Upload a CSV file to view dataset information, preview, and column details.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    target = st.selectbox("Select target column", options=df.columns)
-    test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.2)
-    random_state = st.number_input("Random state", value=42)
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
 
-    if st.button("Train & Evaluate"):
-        try:
-            X = df.drop(columns=[target])
-            y = df[target]
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Dataset Information")
+        info_col1, info_col2 = st.columns(2)
+        info_col1.metric("Rows", f"{len(df):,}")
+        info_col2.metric("Columns", f"{len(df.columns):,}")
+        st.write("Target candidates:", ", ".join(df.columns.tolist()))
+        if len(df) < 20:
+            st.warning(f"⚠️ Dataset has only {len(df)} rows. Recommend at least 20 rows for meaningful results.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-            X = X.fillna(X.mean(numeric_only=True))
-            y = y.dropna()
-            X = X.loc[y.index]
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Data Preview")
+        st.dataframe(df.head(), use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-            X = pd.get_dummies(X, drop_first=True)
-            if X.empty or len(X) == 0:
-                st.error("Error: No valid features after preprocessing.")
-                st.stop()
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Column Information")
+        col_df = pd.DataFrame({
+            "Column": df.columns,
+            "Type": df.dtypes.astype(str).values,
+            "Missing": df.isna().sum().values,
+        })
+        st.dataframe(col_df, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-            if y.dtype == object or y.dtype.name == "category":
-                le = LabelEncoder()
-                y = le.fit_transform(y)
-            else:
-                y = y.astype(int)
+with right_col:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("Upload Dataset")
+    uploaded_file = st.file_uploader("Upload CSV dataset", type=["csv"], label_visibility="collapsed")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-            if len(np.unique(y)) < 2:
-                st.error("Error: Target variable must have at least 2 classes.")
-                st.stop()
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
 
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=test_size, random_state=random_state, stratify=y
-            )
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Training Configuration")
+        target = st.selectbox("Select target column", options=df.columns)
+        test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.2)
+        random_state = st.number_input("Random state", value=42)
 
-            n_neighbors = min(5, max(1, len(X_train) - 1))
-            models = {
-                "LogisticRegression": LogisticRegression(max_iter=1000),
-                "DecisionTree": DecisionTreeClassifier(),
-                "KNN": KNeighborsClassifier(n_neighbors=n_neighbors),
-                "GaussianNB": GaussianNB(),
-                "RandomForest": RandomForestClassifier(n_estimators=100, random_state=random_state),
-            }
+        if st.button("Train & Evaluate", use_container_width=True):
+            try:
+                X = df.drop(columns=[target])
+                y = df[target]
 
-            results = []
-            for name, model in models.items():
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                try:
-                    if len(np.unique(y)) == 2:
-                        y_proba = model.predict_proba(X_test)[:, 1]
-                        auc = roc_auc_score(y_test, y_proba)
-                    else:
-                        auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
-                except Exception:
-                    auc = np.nan
+                X = X.fillna(X.mean(numeric_only=True))
+                y = y.dropna()
+                X = X.loc[y.index]
 
-                res = {
-                    "model": name,
-                    "accuracy": accuracy_score(y_test, y_pred),
-                    "precision": precision_score(y_test, y_pred, average="macro", zero_division=0),
-                    "recall": recall_score(y_test, y_pred, average="macro", zero_division=0),
-                    "f1": f1_score(y_test, y_pred, average="macro", zero_division=0),
-                    "auc": auc,
-                    "mcc": matthews_corrcoef(y_test, y_pred),
+                X = pd.get_dummies(X, drop_first=True)
+                if X.empty or len(X) == 0:
+                    st.error("Error: No valid features after preprocessing.")
+                    st.stop()
+
+                if y.dtype == object or y.dtype.name == "category":
+                    le = LabelEncoder()
+                    y = le.fit_transform(y)
+                else:
+                    y = y.astype(int)
+
+                if len(np.unique(y)) < 2:
+                    st.error("Error: Target variable must have at least 2 classes.")
+                    st.stop()
+
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=test_size, random_state=random_state, stratify=y
+                )
+
+                n_neighbors = min(5, max(1, len(X_train) - 1))
+                models = {
+                    "LogisticRegression": LogisticRegression(max_iter=1000),
+                    "DecisionTree": DecisionTreeClassifier(),
+                    "KNN": KNeighborsClassifier(n_neighbors=n_neighbors),
+                    "GaussianNB": GaussianNB(),
+                    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=random_state),
                 }
-                results.append(res)
-                joblib.dump(model, os.path.join(MODEL_DIR, f"{name}.pkl"))
 
-            results_df = pd.DataFrame(results).set_index("model")
-            st.session_state.results_df = results_df
-            st.session_state.models = models
-            st.session_state.X_test = X_test
-            st.session_state.y_test = y_test
-            st.session_state.selected_model = list(models.keys())[0]
-            st.success("Training and evaluation complete — models saved in model/ directory.")
-        except Exception as e:
-            st.error(f"Error during training: {str(e)}")
-            import traceback
-            st.write(traceback.format_exc())
+                results = []
+                for name, model in models.items():
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    try:
+                        if len(np.unique(y)) == 2:
+                            y_proba = model.predict_proba(X_test)[:, 1]
+                            auc = roc_auc_score(y_test, y_proba)
+                        else:
+                            auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
+                    except Exception:
+                        auc = np.nan
 
-    if "results_df" in st.session_state and st.session_state.results_df is not None:
-        st.write("Evaluation metrics")
-        st.dataframe(st.session_state.results_df)
+                    res = {
+                        "model": name,
+                        "accuracy": accuracy_score(y_test, y_pred),
+                        "precision": precision_score(y_test, y_pred, average="macro", zero_division=0),
+                        "recall": recall_score(y_test, y_pred, average="macro", zero_division=0),
+                        "f1": f1_score(y_test, y_pred, average="macro", zero_division=0),
+                        "auc": auc,
+                        "mcc": matthews_corrcoef(y_test, y_pred),
+                    }
+                    results.append(res)
+                    joblib.dump(model, os.path.join(MODEL_DIR, f"{name}.pkl"))
 
-        model_names = list(st.session_state.models.keys())
-        selected_model = st.selectbox(
-            "Show confusion matrix for",
-            options=model_names,
-            index=model_names.index(st.session_state.get("selected_model", model_names[0])),
-        )
-        st.session_state.selected_model = selected_model
+                results_df = pd.DataFrame(results).set_index("model")
+                st.session_state.results_df = results_df
+                st.session_state.models = models
+                st.session_state.X_test = X_test
+                st.session_state.y_test = y_test
+                st.session_state.selected_model = list(models.keys())[0]
+                st.success("Training and evaluation complete — models saved in model/ directory.")
+            except Exception as e:
+                st.error(f"Error during training: {str(e)}")
+                import traceback
+                st.write(traceback.format_exc())
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        cm_model = st.session_state.models[selected_model]
-        y_pred_sel = cm_model.predict(st.session_state.X_test)
-        cm = confusion_matrix(st.session_state.y_test, y_pred_sel)
-        fig, ax = plt.subplots()
-        sns.heatmap(cm, annot=True, fmt="d", ax=ax)
-        ax.set_xlabel("Predicted")
-        ax.set_ylabel("Actual")
-        st.pyplot(fig)
-else:
-    st.info("""
-    **How to get started:**
-    
-    Option 1: Use the test_data.csv from the repo (simple example)
-    Option 2: For real results, download the Credit Card Fraud Detection dataset:
-    - Go to: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
-    - Download creditcard.csv
-    - Upload it here
-    - Select 'Class' as target column
-    - Run Train & Evaluate
-    """)
+if "results_df" in st.session_state and st.session_state.results_df is not None:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("Results")
+    st.dataframe(st.session_state.results_df, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# Section: show saved results if available
-METRICS_PATH = os.path.join("results", "model_metrics.csv")
-if os.path.exists(METRICS_PATH):
-    st.header("Saved model results")
-    try:
-        metrics_df = pd.read_csv(METRICS_PATH, index_col=0)
-        st.write("Overall metrics (loaded from results/model_metrics.csv)")
-        st.dataframe(metrics_df)
-
-        sel_model = st.selectbox("Select saved model to view confusion matrix", options=list(metrics_df.index))
-        cm_path = os.path.join("results", f"cm_{sel_model}.csv")
-        if os.path.exists(cm_path):
-            cm = pd.read_csv(cm_path, header=None).values
-            fig, ax = plt.subplots()
-            sns.heatmap(cm, annot=True, fmt="d", ax=ax)
+    model_names = list(st.session_state.models.keys())
+    tabs = st.tabs(model_names)
+    for tab, model_name in zip(tabs, model_names):
+        with tab:
+            cm_model = st.session_state.models[model_name]
+            y_pred_sel = cm_model.predict(st.session_state.X_test)
+            cm = confusion_matrix(st.session_state.y_test, y_pred_sel)
+            fig, ax = plt.subplots(figsize=(5, 4))
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
             ax.set_xlabel("Predicted")
             ax.set_ylabel("Actual")
             st.pyplot(fig)
-        else:
-            st.info(f"Confusion matrix file not found for {sel_model}: {cm_path}")
+
+else:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("How to get started")
+    st.info(
+        """
+        Option 1: Use the test_data.csv from the repo
+        Option 2: Download the Credit Card Fraud Detection dataset from Kaggle
+        Option 3: Upload your CSV file, choose the target column, and train the models
+        """
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+METRICS_PATH = os.path.join("results", "model_metrics.csv")
+if os.path.exists(METRICS_PATH):
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("Saved Model Results")
+    try:
+        metrics_df = pd.read_csv(METRICS_PATH, index_col=0)
+        st.write("Overall metrics (loaded from results/model_metrics.csv)")
+        st.dataframe(metrics_df, use_container_width=True)
     except Exception as e:
         st.error(f"Failed to load saved metrics: {e}")
+    st.markdown("</div>", unsafe_allow_html=True)
