@@ -4,7 +4,7 @@
 
 # Data, model, results folders
 data/
-model/
+model/*.pkl
 results/
 
 # Python
