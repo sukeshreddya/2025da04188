@@ -1,5 +1,6 @@
-# CSV files
+# CSV files (except test_data.csv which is required)
 *.csv
+!test_data.csv
 
 # Data, model, results folders
 data/
