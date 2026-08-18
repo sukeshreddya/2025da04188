@@ -98,10 +98,22 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-3. Upload your CSV dataset in the web interface and select target column to train and evaluate all models.
+### Option A: Quick Test (test_data.csv)
+- Upload `test_data.csv` from the repo
+- Select `target` as target column
+- **Important:** Set test_size to **0.2**
+- Click "Train & Evaluate"
+- **Note:** Small dataset gives quick results but less meaningful metrics
 
-4. To retrain models on preprocessed credit card data:
+### Option B: Real Results (creditcard.csv - Recommended)
+- Download from: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+- Upload to app
+- Select `Class` as target column
+- Keep test_size at 0.2
+- Click "Train & Evaluate"
+- **Best results matching the metrics in this README**
 
+### Option C: Retrain from Original Data
 ```bash
 python scripts/train_models.py --input data/eda_creditcard/preprocessed.csv
 ```
