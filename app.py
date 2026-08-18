@@ -82,7 +82,7 @@ with right_col:
         df = pd.read_csv(uploaded_file)
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         st.subheader("Training Configuration")
-        target = st.selectbox("Select target column", options=df.columns)
+        target = st.selectbox("Select target column", options=sorted(df.columns))
         test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.35)
         random_state = st.number_input("Random state", value=42)
 
