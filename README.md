@@ -67,7 +67,7 @@ The imbalanced nature of this dataset makes it ideal for practicing evaluation m
 - **Weakness:** Low precision (0.5603) results in excessive false positives; moderate F1-score (0.6026)
 - **Use Case:** Could serve as a pre-screening filter where catching all fraud is prioritized, with subsequent verification required
 
-#### 5. **Random Forest** ⭐ **WINNER**
+#### 5. **Random Forest** **WINNER**
 - **Strength:** Best overall performance with highest MCC (0.9080), highest precision (0.9661), highest recall (0.9422), and best F1-score (0.9538)
 - **Characteristics:** Exceptional balance between false positives and false negatives; robust ensemble reduces variance
 - **Advantage:** Handles imbalanced data well through ensemble voting; maintains high performance across all metrics
@@ -76,7 +76,7 @@ The imbalanced nature of this dataset makes it ideal for practicing evaluation m
 
 ### Overall Winner & Recommendation
 
-**🏆 Random Forest** is the clear best-performing model for this fraud detection task.
+**Random Forest** is the clear best-performing model for this fraud detection task.
 
 **Rationale:**
 - **Highest MCC (0.9080):** Superior predictive power compared to all alternatives
@@ -87,7 +87,7 @@ The imbalanced nature of this dataset makes it ideal for practicing evaluation m
 - **Production-Ready:** Most reliable model for real-world fraud detection deployment
 
 **Model Ranking (Best to Worst):**
-1. **Random Forest** — MCC: 0.9080 ✅ Production Ready
+1. **Random Forest** — MCC: 0.9080  Production Ready
 2. **Decision Tree** — MCC: 0.8439 (Good, but less robust)
 3. **Logistic Regression** — MCC: 0.6662 (Acceptable baseline)
 4. **Gaussian Naive Bayes** — MCC: 0.3239 (High recall, too many false alarms)
@@ -118,14 +118,9 @@ streamlit run app.py
 - Download from: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
 - Upload to app
 - Select `Class` as target column
-- Keep test_size at 0.2
+- Keep test_size at 0.35
 - Click "Train & Evaluate"
 - **Best results matching the metrics in this README**
-
-### Option C: Retrain from Original Data
-```bash
-python scripts/train_models.py --input data/eda_creditcard/preprocessed.csv
-```
 
 ## UI Flow: From Upload to Model Comparison
 
@@ -180,13 +175,8 @@ Mac_Learning_Assignment2/
 │   ├── download_kaggle_data.py    # Download credit card dataset
 │   ├── eda_preprocess.py          # EDA and preprocessing
 │   └── train_models.py            # Model training script
-├── data/
-│   ├── creditcard.csv             # Original dataset
-│   ├── preprocessed.csv           # Preprocessed dataset
-│   └── eda_creditcard/
-│       ├── preprocessed.csv       # Final preprocessed data
-│       └── eda_report.txt         # EDA insights
 ├── model/
+│   ├── train_models.py
 │   ├── LogisticRegression.pkl
 │   ├── DecisionTree.pkl
 │   ├── KNN.pkl
@@ -208,10 +198,10 @@ Mac_Learning_Assignment2/
 
 ## Streamlit App Features
 
-✅ **Dataset Upload** — Upload CSV file for training
-✅ **Model Selection** — Choose from 5 trained models
-✅ **Evaluation Metrics** — View accuracy, precision, recall, F1, AUC, MCC
-✅ **Confusion Matrix** — Visualize model predictions
+**Dataset Upload** — Upload CSV file for training
+**Model Selection** — Choose from 5 trained models
+**Evaluation Metrics** — View accuracy, precision, recall, F1, AUC, MCC
+**Confusion Matrix** — Visualize model predictions
 
 ## Notes
 
