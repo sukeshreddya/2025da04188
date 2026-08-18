@@ -83,7 +83,7 @@ with right_col:
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         st.subheader("Training Configuration")
         target = st.selectbox("Select target column", options=df.columns)
-        test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.2)
+        test_size = st.slider("Test size (fraction)", 0.1, 0.5, 0.35)
         random_state = st.number_input("Random state", value=42)
 
         if st.button("Train & Evaluate", use_container_width=True):
