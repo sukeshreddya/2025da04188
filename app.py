@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import joblib
 import os
 
-st.set_page_config(layout="wide", initial_sidebar_state="expanded", theme="dark")
+st.set_page_config(layout="wide")
 
 MODEL_DIR = "model"
 os.makedirs(MODEL_DIR, exist_ok=True)
