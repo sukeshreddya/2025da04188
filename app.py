@@ -57,18 +57,15 @@ if uploaded_file is not None:
             X = df.drop(columns=[target])
             y = df[target]
 
-            # Handle missing values
             X = X.fillna(X.mean(numeric_only=True))
             y = y.dropna()
             X = X.loc[y.index]
 
-            # Basic preprocessing
             X = pd.get_dummies(X, drop_first=True)
             if X.empty or len(X) == 0:
                 st.error("Error: No valid features after preprocessing.")
                 st.stop()
 
-            # Encode target if needed
             if y.dtype == object or y.dtype.name == "category":
                 le = LabelEncoder()
                 y = le.fit_transform(y)
@@ -83,9 +80,7 @@ if uploaded_file is not None:
                 X, y, test_size=test_size, random_state=random_state, stratify=y
             )
 
-            # Adaptive n_neighbors for KNN based on training set size
             n_neighbors = min(5, max(1, len(X_train) - 1))
-
             models = {
                 "LogisticRegression": LogisticRegression(max_iter=1000),
                 "DecisionTree": DecisionTreeClassifier(),
@@ -117,30 +112,40 @@ if uploaded_file is not None:
                     "mcc": matthews_corrcoef(y_test, y_pred),
                 }
                 results.append(res)
-
-                # save model with sanitized name
                 joblib.dump(model, os.path.join(MODEL_DIR, f"{name}.pkl"))
 
             results_df = pd.DataFrame(results).set_index("model")
-            st.write("Evaluation metrics")
-            st.dataframe(results_df)
-
-            # show confusion matrix for selected model
-            sel = st.selectbox("Show confusion matrix for", options=list(models.keys()))
-            cm_model = joblib.load(os.path.join(MODEL_DIR, f"{sel}.pkl"))
-            y_pred_sel = cm_model.predict(X_test)
-            cm = confusion_matrix(y_test, y_pred_sel)
-            fig, ax = plt.subplots()
-            sns.heatmap(cm, annot=True, fmt="d", ax=ax)
-            ax.set_xlabel("Predicted")
-            ax.set_ylabel("Actual")
-            st.pyplot(fig)
-
+            st.session_state.results_df = results_df
+            st.session_state.models = models
+            st.session_state.X_test = X_test
+            st.session_state.y_test = y_test
+            st.session_state.selected_model = list(models.keys())[0]
             st.success("Training and evaluation complete — models saved in model/ directory.")
         except Exception as e:
             st.error(f"Error during training: {str(e)}")
             import traceback
             st.write(traceback.format_exc())
+
+    if "results_df" in st.session_state and st.session_state.results_df is not None:
+        st.write("Evaluation metrics")
+        st.dataframe(st.session_state.results_df)
+
+        model_names = list(st.session_state.models.keys())
+        selected_model = st.selectbox(
+            "Show confusion matrix for",
+            options=model_names,
+            index=model_names.index(st.session_state.get("selected_model", model_names[0])),
+        )
+        st.session_state.selected_model = selected_model
+
+        cm_model = st.session_state.models[selected_model]
+        y_pred_sel = cm_model.predict(st.session_state.X_test)
+        cm = confusion_matrix(st.session_state.y_test, y_pred_sel)
+        fig, ax = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt="d", ax=ax)
+        ax.set_xlabel("Predicted")
+        ax.set_ylabel("Actual")
+        st.pyplot(fig)
 else:
     st.info("""
     **How to get started:**
