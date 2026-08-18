@@ -118,6 +118,46 @@ streamlit run app.py
 python scripts/train_models.py --input data/eda_creditcard/preprocessed.csv
 ```
 
+## UI Flow: From Upload to Model Comparison
+
+The application follows a simple user workflow for quick evaluation and comparison:
+
+```text
+Upload CSV
+   ↓
+Preview dataset
+   ↓
+Select target column
+   ↓
+Adjust test size and random state
+   ↓
+Click "Train & Evaluate"
+   ↓
+All 5 models train and evaluate
+   ↓
+Metrics table is displayed
+   ↓
+Choose model from dropdown
+   ↓
+Confusion matrix updates for selected model
+```
+
+This flow is implemented in the Streamlit app located in `app.py` and allows users to:
+- upload a dataset,
+- inspect the data preview,
+- choose the target variable,
+- train all machine learning models together,
+- compare model performance with key metrics,
+- and inspect the confusion matrix for any model.
+
+## How the App Works After Upload
+
+Once a CSV file is uploaded, the app reads the dataset into a Pandas DataFrame and shows a preview. The user then selects the target column, configures the train/test split ratio and random state, and clicks "Train & Evaluate". The app separates the data into features (`X`) and target (`y`), fills missing values, encodes non-numeric fields, and converts the target to numeric labels when needed. It then splits the data into training and test sets, trains all five classifiers, and evaluates each model on the same unseen test set.
+
+The evaluation step calculates accuracy, precision, recall, F1-score, AUC, and MCC for every model. These values are displayed in a comparison table so the user can immediately compare model performance. After that, the user can choose any trained model from a dropdown and the app generates its confusion matrix, making it easy to inspect true positives, false positives, false negatives, and true negatives for the selected classifier.
+
+This means the app is not just loading a file; it is converting the uploaded data into a machine learning workflow: dataset preparation → train/test split → model training → metrics comparison → confusion matrix analysis.
+
 ## Repository Structure
 
 ```
