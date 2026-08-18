@@ -27,9 +27,24 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 
 st.title("ML Models Comparison — Assignment 2 Starter")
 
+st.markdown("""
+**Instructions:**
+1. Upload a CSV file with at least 20 rows for meaningful results
+2. Select the target column
+3. Adjust test size and random state
+4. Click "Train & Evaluate" to run all 5 models
+
+**Recommended:** Use the preprocessed credit card dataset for best results.
+""")
+
 uploaded_file = st.file_uploader("Upload CSV dataset", type=["csv"]) 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
+    
+    # Warning for small datasets
+    if len(df) < 20:
+        st.warning(f"⚠️ Dataset has only {len(df)} rows. Recommend at least 20 rows for meaningful results.")
+    
     st.write("Data preview")
     st.dataframe(df.head())
 
@@ -68,10 +83,13 @@ if uploaded_file is not None:
                 X, y, test_size=test_size, random_state=random_state, stratify=y
             )
 
+            # Adaptive n_neighbors for KNN based on training set size
+            n_neighbors = min(5, max(1, len(X_train) - 1))
+
             models = {
                 "LogisticRegression": LogisticRegression(max_iter=1000),
                 "DecisionTree": DecisionTreeClassifier(),
-                "KNN": KNeighborsClassifier(),
+                "KNN": KNeighborsClassifier(n_neighbors=n_neighbors),
                 "GaussianNB": GaussianNB(),
                 "RandomForest": RandomForestClassifier(n_estimators=100, random_state=random_state),
             }
@@ -123,10 +141,18 @@ if uploaded_file is not None:
             st.error(f"Error during training: {str(e)}")
             import traceback
             st.write(traceback.format_exc())
-
-        st.success("Training and evaluation complete — models saved in model/ directory.")
 else:
-    st.info("Upload a CSV to get started. A sample `test_data.csv` placeholder is included in the repo.")
+    st.info("""
+    **How to get started:**
+    
+    Option 1: Use the test_data.csv from the repo (simple example)
+    Option 2: For real results, download the Credit Card Fraud Detection dataset:
+    - Go to: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+    - Download creditcard.csv
+    - Upload it here
+    - Select 'Class' as target column
+    - Run Train & Evaluate
+    """)
 
 # Section: show saved results if available
 METRICS_PATH = os.path.join("results", "model_metrics.csv")
