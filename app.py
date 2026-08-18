@@ -33,59 +33,37 @@ st.markdown(
     """
     <style>
     .section-card {
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 12px;
-        padding: 1rem 1rem 0.75rem 1rem;
-        background: rgba(255,255,255,0.02);
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 0.9rem 1rem 0.8rem 1rem;
+        background: rgba(255,255,255,0.015);
+        margin-bottom: 0.9rem;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
     }
     .section-card h3, .section-card h4 {
         margin-top: 0;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.65rem;
+        font-weight: 600;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 0.35rem 0.75rem;
+        background: rgba(255,255,255,0.03);
+    }
+    .stButton > button {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-uploaded_file = None
-left_col, right_col = st.columns([1.3, 0.9])
-
-with left_col:
-    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.subheader("Dataset Overview")
-    if uploaded_file is None:
-        st.info("Upload a CSV file to view dataset information, preview, and column details.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        st.subheader("Dataset Information")
-        info_col1, info_col2 = st.columns(2)
-        info_col1.metric("Rows", f"{len(df):,}")
-        info_col2.metric("Columns", f"{len(df.columns):,}")
-        st.write("Target candidates:", ", ".join(df.columns.tolist()))
-        if len(df) < 20:
-            st.warning(f"⚠️ Dataset has only {len(df)} rows. Recommend at least 20 rows for meaningful results.")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        st.subheader("Data Preview")
-        st.dataframe(df.head(), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        st.subheader("Column Information")
-        col_df = pd.DataFrame({
-            "Column": df.columns,
-            "Type": df.dtypes.astype(str).values,
-            "Missing": df.isna().sum().values,
-        })
-        st.dataframe(col_df, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+df = None
+right_col, left_col = st.columns([0.9, 1.3])
 
 with right_col:
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
@@ -95,7 +73,6 @@ with right_col:
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
-
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         st.subheader("Training Configuration")
         target = st.selectbox("Select target column", options=df.columns)
@@ -177,35 +154,55 @@ with right_col:
                 st.write(traceback.format_exc())
         st.markdown("</div>", unsafe_allow_html=True)
 
+with left_col:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.subheader("Dataset Overview")
+    if df is None:
+        st.info("Upload a CSV file to view dataset information, preview, and column details.")
+    else:
+        info_col1, info_col2 = st.columns(2)
+        info_col1.metric("Rows", f"{len(df):,}")
+        info_col2.metric("Columns", f"{len(df.columns):,}")
+        st.write("Target candidates:", ", ".join(df.columns.tolist()))
+        if len(df) < 20:
+            st.warning(f"⚠️ Dataset has only {len(df)} rows. Recommend at least 20 rows for meaningful results.")
+
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Data Preview")
+        st.dataframe(df.head(), use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+        st.subheader("Column Information")
+        col_df = pd.DataFrame({
+            "Column": df.columns,
+            "Type": df.dtypes.astype(str).values,
+            "Missing": df.isna().sum().values,
+        })
+        st.dataframe(col_df, use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 if "results_df" in st.session_state and st.session_state.results_df is not None:
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
     st.subheader("Results")
-    st.dataframe(st.session_state.results_df, use_container_width=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    model_names = list(st.session_state.models.keys())
-    tabs = st.tabs(model_names)
-    for tab, model_name in zip(tabs, model_names):
-        with tab:
-            cm_model = st.session_state.models[model_name]
-            y_pred_sel = cm_model.predict(st.session_state.X_test)
-            cm = confusion_matrix(st.session_state.y_test, y_pred_sel)
-            fig, ax = plt.subplots(figsize=(5, 4))
-            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
-            ax.set_xlabel("Predicted")
-            ax.set_ylabel("Actual")
-            st.pyplot(fig)
-
-else:
-    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    st.subheader("How to get started")
-    st.info(
-        """
-        Option 1: Use the test_data.csv from the repo
-        Option 2: Download the Credit Card Fraud Detection dataset from Kaggle
-        Option 3: Upload your CSV file, choose the target column, and train the models
-        """
-    )
+    result_left, result_right = st.columns([1.2, 1])
+    with result_left:
+        st.dataframe(st.session_state.results_df, use_container_width=True)
+    with result_right:
+        model_names = list(st.session_state.models.keys())
+        tabs = st.tabs(model_names)
+        for tab, model_name in zip(tabs, model_names):
+            with tab:
+                cm_model = st.session_state.models[model_name]
+                y_pred_sel = cm_model.predict(st.session_state.X_test)
+                cm = confusion_matrix(st.session_state.y_test, y_pred_sel)
+                fig, ax = plt.subplots(figsize=(4.5, 3.4))
+                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+                ax.set_xlabel("Predicted")
+                ax.set_ylabel("Actual")
+                fig.tight_layout()
+                st.pyplot(fig)
     st.markdown("</div>", unsafe_allow_html=True)
 
 METRICS_PATH = os.path.join("results", "model_metrics.csv")
